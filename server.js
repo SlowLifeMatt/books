@@ -1,5 +1,4 @@
 
-   
 // Dependencies
 const express = require('express')
 const app = express()
@@ -28,52 +27,11 @@ db.on("disconnected", () => console.log("mongo disconnected"))
 //MIDDLEWARE
 // Body Parser middleware - give us access to req.body
 app.use(express.urlencoded({ extended: true }))
-// captures (post) requests for put and delete and converts them from a post
+// captures (post) requests for put and delete and convertes them from a post
 app.use(methodOverride("_method"))
 
 // I N D U C E S - Index New Delete Update Create Edit Show
 
-// INDEX
-app.get("/books", (req, res) => {
-  Book.find({}, (error, allBooks) => {
-    res.render("index.ejs", { books: allBooks })
-  })
-})
-
-// NEW
-app.get("/books/new", (req, res) => {
-  res.render("new.ejs")
-})
-
-// Delete
-app.delete("/books/:id", (req, res) => {
-  Book.findByIdAndRemove(req.params.id, (err, deletedBook) => {
-    res.redirect("/books")
-  })
-})
-
-// CREATE
-app.post("/books", (req, res) => {
-  if (req.body.completed === "on") {
-    // if the "completed" checkbox is checked change it to true
-    req.body.completed = true
-  } else {
-    // if the checkbox is not checked change it to false
-    req.body.completed = false
-  }
-  Book.create(req.body, (error, createdBook) => {
-    res.redirect("/books")
-  })
-})
-
-// SHOW
-app.get("/books/:id", (req, res) => {
-  Book.findById(req.params.id, (err, foundBook) => {
-    res.render("show.ejs", { book: foundBook })
-  })
-})
-
-// Routes / Controllers
 // Seed
 app.get("/books/seed", (req, res) => {
   Book.deleteMany({}, (error, allBooks) => {})
@@ -115,6 +73,74 @@ app.get("/books/seed", (req, res) => {
       res.redirect("/books")
     }
   )
+})
+
+// INDEX
+app.get("/books", (req, res) => {
+  Book.find({}, (error, allBooks) => {
+    res.render("index.ejs", { books: allBooks })
+  })
+})
+
+// NEW
+app.get("/books/new", (req, res) => {
+  res.render("new.ejs")
+})
+
+// DELETE
+app.delete("/books/:id", (req, res) => {
+  Book.findByIdAndRemove(req.params.id, (err, deletedBook) => {
+    res.redirect("/books")
+  })
+})
+
+// UPDATE
+app.put("/books/:id", (req, res) => {
+  if (req.body.completed === "on") {
+    req.body.completed = true;
+  } else {
+    req.body.completed = false;
+  }
+
+  // We can also use a ternary
+  // req.body.completed = (req.body.completed === "on") ? true : false;
+
+  Book.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    { new: true },
+    (err, updatedBook) => {
+    // redirect user to showpage
+    res.redirect(`/books/${req.params.id}`);
+  })
+})
+
+// CREATE
+app.post("/books", (req, res) => {
+  if (req.body.completed === "on") {
+    // if the "completed" checkbox is checked change it to true
+    req.body.completed = true
+  } else {
+    // if the checkbox is not checked change it to false
+    req.body.completed = false
+  }
+  Book.create(req.body, (error, createdBook) => {
+    res.redirect("/books")
+  })
+})
+
+// EDIT
+app.get("/books/:id/edit", (req, res) => {
+  Book.findById(req.params.id, (err, foundBook) => {
+    res.render("edit.ejs", { book: foundBook })
+  })
+})
+
+// SHOW
+app.get("/books/:id", (req, res) => {
+  Book.findById(req.params.id, (err, foundBook) => {
+    res.render("show.ejs", { book: foundBook })
+  })
 })
 
 
